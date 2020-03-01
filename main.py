@@ -1,12 +1,15 @@
 import pandas as pd 
 import matplotlib.pyplot as plt 
 import seaborn as sns
+from matplotlib import interactive
 
 # Set the background style we want
 sns.set_style('darkgrid', {"axes.edgecolor": ".15", "grid.color": ".15"})
 sns.set_palette('Set2')
 
 df = pd.read_csv('hotel_bookings.csv')
+
+print(df[df['babies'] > 3].head())
 
 def summary(df):
 	print(df.head())
@@ -24,37 +27,37 @@ def set_params(ax, title, xtitle, ytitle, facecolor):
 	ax.set_facecolor(facecolor)
 
 # Slicing dataframe to only look at active bookings.
-df_not_canceled = df[df['is_canceled'] == 0]
+# There are also two outliers where the number of babies is higher and it skews the data and makes the visuals 
+# less visually appealing.
+df_not_canceled = df[(df['is_canceled'] == 0) & (df['babies'] < 4)]
 
 # Quick summary of what our data looks like
 summary(df_not_canceled)
 
 # Creating subplots and styling figure.
-fig, ax=plt.subplots(nrows=4)
+fig, ax=plt.subplots(nrows=4, num='Graphical Analysis of Lead Time vs Types of People')
 fig.set_facecolor("lightslategray")
 
-months= ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-
 # Building our Four Plots.
-sns.barplot(x='arrival_date_month', y='stays_in_week_nights', data=df_not_canceled, hue='arrival_date_year',
-		 ci=None, ax=ax[0], edgecolor='black',
-		 order=months)
-sns.kdeplot(data=df_not_canceled['adults'], shade=False, ax=ax[1])
-sns.kdeplot(data=df_not_canceled['children'], shade=False, ax=ax[1])
+sns.kdeplot(data=df_not_canceled['adults'], shade=False, ax=ax[0])
+sns.kdeplot(data=df_not_canceled['children'], shade=False, ax=ax[0])
+sns.kdeplot(data=df_not_canceled['babies'], shade=False, ax=ax[0])
+
+sns.barplot(x='lead_time', y='babies', data=df_not_canceled, ax=ax[1], ci=None, orient='h', edgecolor='black')
 sns.barplot(x='lead_time', y='adults', data=df_not_canceled, ax=ax[2], ci=None, orient='h', edgecolor='black')
 sns.barplot(x='lead_time', y='children', data=df_not_canceled, ax=ax[3], ci=None, orient='h', edgecolor='black')
 
 
 # Setting labels for our plots.
 set_params(ax[0], 
-		title='Month of Hotel Arrival vs # of Weekdays Stayed',
-		xtitle='Month of Arrival',
-		ytitle='# of Weekdays',
+		title='Distribution of Number of Babies, Children, & Adults',
+		xtitle='Number',
+		ytitle='Occurences',
 		facecolor="lightslategray")
 set_params(ax[1],
-		title='Distribution of Number of Children & Adults',
-		xtitle='Number',
-		ytitle='Kernel Distribution',
+		title='Number of Babies vs Lead Time of Booking',
+		xtitle='Lead Time in Days',
+		ytitle='Number of Babies',
 		facecolor="lightslategray")
 set_params(ax[2],
 		title='Number of Adults vs Lead Time of Booking',
@@ -67,10 +70,25 @@ set_params(ax[3],
 		ytitle='Number of Children',
 		facecolor="lightslategray")
 
-ax[0].legend(ncol=2, loc='upper left',framealpha=.5)
-ax[1].legend(loc='upper left', framealpha=.5)
+ax[0].legend(ncol=2, loc='upper right',framealpha=.5)
 
 # Tight Layout prevents our labels from overlapping.
 plt.tight_layout(pad=.15)
-plt.show()
+fig.show()
+
+# Creating our Second Figure and styling it.
+fig2, ax = plt.subplots(nrows=1)
+fig2 = plt.figure(2)
+fig2.set_facecolor('lightslategray')
+
+# Creating our subplots.
+sns.barplot(x='adults', y='lead_time', data=df_not_canceled, ci=None, ax=ax, edgecolor='black')
+ax.set_facecolor('lightslategray')
+
+fig2.show()
+
+# Since we are creating two figures, in order to show them simultaneously we need to ask for an input to
+# keep our program running.
+input('Press "Enter" when are you done')
+# plt.show()
 
