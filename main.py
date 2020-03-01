@@ -33,8 +33,12 @@ summary(df_not_canceled)
 fig, ax=plt.subplots(nrows=4)
 fig.set_facecolor("lightslategray")
 
+months= ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+
 # Building our Four Plots.
-sns.barplot(x='arrival_date_month', y='stays_in_week_nights', data=df_not_canceled, hue='arrival_date_year', ci=None, ax=ax[0], edgecolor='black')
+sns.barplot(x='arrival_date_month', y='stays_in_week_nights', data=df_not_canceled, hue='arrival_date_year',
+		 ci=None, ax=ax[0], edgecolor='black',
+		 order=months)
 sns.kdeplot(data=df_not_canceled['adults'], shade=False, ax=ax[1])
 sns.kdeplot(data=df_not_canceled['children'], shade=False, ax=ax[1])
 sns.barplot(x='lead_time', y='adults', data=df_not_canceled, ax=ax[2], ci=None, orient='h', edgecolor='black')
@@ -62,6 +66,9 @@ set_params(ax[3],
 		xtitle='Lead Time in Days',
 		ytitle='Number of Children',
 		facecolor="lightslategray")
+
+ax[0].legend(ncol=2, loc='upper left',framealpha=.5)
+ax[1].legend(loc='upper left', framealpha=.5)
 
 # Tight Layout prevents our labels from overlapping.
 plt.tight_layout(pad=.15)
