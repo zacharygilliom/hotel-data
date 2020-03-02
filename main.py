@@ -23,29 +23,50 @@ def set_params(ax, title, xtitle, ytitle, facecolor):
 	ax.set_ylabel(ytitle)
 	ax.set_facecolor(facecolor)
 
+# Changing our Meals value into full words so they are easier to understand.
+def change_meals(df, di):
+	df['meal'] = df['meal'].map(di)
+	return df
+
+# Allows us to order our x axis in our charts.
+Months=['January', 'February', 'March', 'April', 'May', 'June', 'July',
+		'August', 'September', 'October', 'November', 'December']
+
+# Dict to change our breakfast values.
+breakfast = {'SC': 'No meal', 'BB': 'Bed & Breakfast', 'HB': 'Half Board', 'FB': 'Full Board'}
+
 # Slicing dataframe to only look at active bookings.
 # There are also two outliers where the number of babies is higher and it skews the data and makes the visuals 
 # less visually appealing.
-df_not_canceled = df[(df['is_canceled'] == 0) & (df['babies'] < 4)]
+df_not_canceled = df[(df['is_canceled'] == 0)
+	& (df['babies'] < 4)
+	& (df['adr'] < 1000)
+	& (df['adr'] > 0)
+	]
+
 df_not_canceled['children'] = df_not_canceled['children'].astype('int64')
+
+df_not_canceled = change_meals(df=df_not_canceled, di=breakfast)
+
 # Quick summary of what our data looks like
 summary(df_not_canceled)
 
-# Creating subplots and styling figure.
+# Creating subplots and styling of our first figure.
 fig, ax=plt.subplots(nrows=4, num='Graphical Analysis of Lead Time vs Types of People')
 fig.set_facecolor("lightslategray")
 
-# Building our Four Plots.
+# Building our four plots for figure 1.
 sns.kdeplot(data=df_not_canceled['adults'], shade=False, ax=ax[0])
 sns.kdeplot(data=df_not_canceled['children'], shade=False, ax=ax[0])
 sns.kdeplot(data=df_not_canceled['babies'], shade=False, ax=ax[0])
+ax[0].legend(ncol=2, loc='upper right', framealpha=.5)
 
 sns.barplot(x='lead_time', y='babies', data=df_not_canceled, ax=ax[1], ci=None, orient='h', edgecolor='black')
 sns.barplot(x='lead_time', y='adults', data=df_not_canceled, ax=ax[2], ci=None, orient='h', edgecolor='black')
 sns.barplot(x='lead_time', y='children', data=df_not_canceled, ax=ax[3], ci=None, orient='h', edgecolor='black')
 
 
-# Setting labels for our plots.
+# Setting labels for our first plots.
 set_params(ax[0], 
 		title='Distribution of Number of Babies, Children, & Adults',
 		xtitle='Number',
@@ -67,43 +88,69 @@ set_params(ax[3],
 		ytitle='Number of Children',
 		facecolor="lightslategray")
 
-ax[0].legend(ncol=2, loc='upper right', framealpha=.5)
 
 # Tight Layout prevents our labels from overlapping.
 plt.tight_layout(pad=.15)
 fig.show()
 
 # Creating our Second Figure and styling it.
-fig2, ax = plt.subplots(nrows=3, num='Analysis by Day of Month')
+fig2, ax = plt.subplots(nrows=3, num='Analysis by Month')
 fig2.set_facecolor('lightslategray')
 
-# Creating our subplots.
-sns.barplot(x='arrival_date_day_of_month', y='lead_time', hue='hotel', data=df_not_canceled, ci=None, ax=ax[0], edgecolor='black')
-ax[0].set_facecolor('lightslategray')
+# Creating our 3 subplots and styling them.
+sns.barplot(x='arrival_date_month', y='adr', hue='hotel',
+	data=df_not_canceled, ci=None, ax=ax[0], edgecolor='black', order=Months)
+
 ax[0].legend(ncol=2, loc='upper right', framealpha=.5)
 
-sns.barplot(x='arrival_date_day_of_month', y='lead_time', hue='meal', data=df_not_canceled, ci=None, ax=ax[1], edgecolor='black')
-ax[1].set_facecolor('lightslategray')
+sns.barplot(x='arrival_date_month', y='adr', hue='meal',
+	data=df_not_canceled, ci=None, ax=ax[1], edgecolor='black', order=Months)
+
 ax[1].legend(ncol=2, loc='upper right', framealpha=.5)
 
-sns.kdeplot(data=df_not_canceled['lead_time'], shade=True, ax=ax[2])
-ax[2].set_facecolor('lightslategray')
+sns.kdeplot(data=df_not_canceled['adr'], shade=True, ax=ax[2])
 ax[2].legend(framealpha=.5)
-plt.tight_layout(pad=.15)
 
+# Set labels for our charts.
+set_params(ax[0],
+		title='Month of Arrival vs Avg. Daily Rate by Hotel',
+		xtitle='Month',
+		ytitle='Avg. Daily Rate',
+		facecolor='lightslategray')
+
+set_params(ax[1],
+		title='Month of Arrival vs. Avg. Daily Rate by Meal',
+		xtitle='Month',
+		ytitle='Avg. Daily Rate',
+		facecolor='lightslategray')
+
+set_params(ax[2],
+		title='Distribution of the Avg. Daily Rate',
+		xtitle='Avg. Daily Rate',
+		ytitle='Occurnece',
+		facecolor='lightslategray')
+
+plt.tight_layout(pad=.15)
 fig2.show()
 
-# Creating our 3rd Subplot
-fig3, ax = plt.subplots(nrows=1, num='Violin Plots')
+# Creating our 3rd Subplot and styling it.
+fig3, ax = plt.subplots(nrows=1,
+	num='Distribution of Meal Types at Each Type of Hotel and Avg. Daily Rate')
 fig3.set_facecolor('lightslategray')
 
-sns.violinplot(x='meal', y='lead_time', hue='hotel', data=df_not_canceled, ax=ax)
+sns.violinplot(x='meal', y='adr', hue='hotel', data=df_not_canceled, ax=ax)
 ax.set_facecolor('lightslategray')
+
+# Set labels for our violin plot.
+set_params(ax,
+		title='Distribution of Meals vs Avg. Daily Rate by Hotel',
+		xtitle='Meal Type', 
+		ytitle='Avg. Daily Rate',
+		facecolor='lightslategray')
 
 fig3.show()
 
 # Since we are creating two figures, in order to show them simultaneously we need to ask for an input to
 # keep our program running.
 input('Press "Enter" when are you done')
-# plt.show()
 
