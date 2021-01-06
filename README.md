@@ -1,4 +1,7 @@
 # Hotel Data From Across the World
+
+##Working on Redesign Model.  Below plots are outdated
+
 Data downloaded from Kaggle.com
 
 Looking at some of the attributes of hotel bookings from across the world.
